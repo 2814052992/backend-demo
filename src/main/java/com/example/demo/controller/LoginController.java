@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import org.springframework.util.DigestUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -46,14 +47,16 @@ public class LoginController {
             return Result.error("账号不存在");
         }
 
-        // 5. 比对密码
-        // 注意：实际开发中密码是加密的，这里为了教学演示，数据库里存的是明文 "123456"
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        // 用户输入的密码是 123456 (明文)
+        // 数据库里的密码是 e10adc3949ba59abbe56e057f20f883e (密文)
+        // 我们把输入的 123456 也加密成密文，再比较是否相等
+        String inputPasswordEncrypted = DigestUtils.md5DigestAsHex(loginRequest.getPassword().getBytes());
+
+        if (!user.getPassword().equals(inputPasswordEncrypted)) {
             return Result.error("密码错误");
         }
 
-        // 6. 登录成功
-        // 把查出来的 user 对象返回给前端（包含了昵称、ID等信息）
+        user.setPassword(null); // 安全起见，不把密码返回给前端
         return Result.success(user, "登录成功");
     }
 
@@ -83,7 +86,8 @@ public class LoginController {
         //创建新用户并保存
         User user = new User();
         user.setUsername(registerRequest.getUsername());
-        user.setPassword(registerRequest.getPassword());
+        String encryptedPassword = DigestUtils.md5DigestAsHex(registerRequest.getPassword().getBytes());
+        user.setPassword(encryptedPassword);
         user.setEmail(registerRequest.getEmail());
         user.setNickname("新用户"+System.currentTimeMillis());//默认给个昵称
 
@@ -111,9 +115,9 @@ public class LoginController {
             return Result.error("验证失败,请检查邮箱是否正确");
         }
 
-        //通过验证，更新密码
-        user.setPassword(request.getNewPassword());
-        userMapper.updateById(user);//MyBatis-Plus 的更新方法
+        String newPasswordEncrypted = DigestUtils.md5DigestAsHex(request.getNewPassword().getBytes());
+        user.setPassword(newPasswordEncrypted);
+        userMapper.updateById(user);
 
         return Result.success(null,"密码重置成功");
     }

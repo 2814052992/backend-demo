@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import java.time.LocalDate; // 用于生日日期
 
 @Data// 自动生成 Getter/Setter
 // @TableName: 告诉 MyBatis-Plus，这个类对应数据库里的 "users" 表
@@ -21,4 +22,12 @@ public class User {
     private String password;
     private String email;
     private String nickname;
+    private String gender;      // 性别
+    private Integer age;        // 年龄
+    private LocalDate birthday; // 生日
+    private String phone;       // 手机
+    private String qq;          // QQ
+    private String wechat;      // 微信
+    private String avatar;      // 头像
+    private String bio;         // 简介
 }
