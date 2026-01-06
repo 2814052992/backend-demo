@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -10,6 +11,7 @@ public class UpdateUserRequest {
     private String phone;
     private String gender;
     private Integer age;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
     private String qq;
     private String wechat;

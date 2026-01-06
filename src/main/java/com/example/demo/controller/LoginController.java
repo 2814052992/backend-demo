@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.example.demo.common.JwtUtils;
 import com.example.demo.common.Result;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.entity.User;
@@ -28,7 +31,7 @@ public class LoginController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<User> login(@RequestBody LoginRequest loginRequest) {
+    public Result<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
         // (Result<User> 这里改成 User，因为我们要返回用户详情给前端)
 
         // 2. 构建查询条件
@@ -51,13 +54,26 @@ public class LoginController {
         // 数据库里的密码是 e10adc3949ba59abbe56e057f20f883e (密文)
         // 我们把输入的 123456 也加密成密文，再比较是否相等
         String inputPasswordEncrypted = DigestUtils.md5DigestAsHex(loginRequest.getPassword().getBytes());
-
         if (!user.getPassword().equals(inputPasswordEncrypted)) {
             return Result.error("密码错误");
         }
 
-        user.setPassword(null); // 安全起见，不把密码返回给前端
-        return Result.success(user, "登录成功");
+        // 生成 Token
+        // 我们把用户的 id 和 username 藏在 Token 里，以后看到 Token 就知道是谁
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("username", user.getUsername());
+
+        String token = JwtUtils.generateToken(claims);
+
+        // 打包返回数据
+        user.setPassword(null); // 依然要把密码擦除
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token); // 放通行证
+        data.put("user", user);   // 放用户信息
+
+        return Result.success(data, "登录成功");
     }
 
 
