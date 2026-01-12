@@ -19,7 +19,7 @@ import com.example.demo.dto.ResetPasswordRequest;
 
 @Tag(name = "身份认证接口")
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin
 @RequestMapping("/api")
 public class LoginController {
 
